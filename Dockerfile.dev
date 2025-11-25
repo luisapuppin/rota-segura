@@ -7,12 +7,23 @@ RUN npm install
 
 COPY . .
 
-# If a zipped dataset exists, unzip it into public/data during image build so the raw CSV
-# isn't stored in the repository history. The `acidentes_2017_2025_tratado.csv.zip` file
-# should be placed under `public/data/` and will be extracted here.
-RUN if [ -f public/data/acidentes_2017_2025_tratado.csv.zip ]; then \
-			mkdir -p public/data && \
-			unzip -o public/data/acidentes_2017_2025_tratado.csv.zip -d public/data; \
+# Download and extract the dataset from Google Drive if it's not present locally.
+# Uses `gdown` (installed temporarily) to handle Google Drive download confirmation tokens.
+# FILE_ID is taken from the shared link: https://drive.google.com/file/d/FILE_ID/view
+ARG DATA_FILE_ID=1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4
+ARG DATA_ZIP=public/data/acidentes_2017_2025_tratado.csv.zip
+RUN mkdir -p public/data && \
+		if [ ! -f "$DATA_ZIP" ]; then \
+			echo "Downloading dataset from Google Drive..."; \
+			apk add --no-cache --virtual .fetch-deps python3 py3-pip unzip ca-certificates && \
+			pip3 install --no-cache-dir gdown && \
+			python3 -m gdown --id "$DATA_FILE_ID" -O "$DATA_ZIP" || true && \
+			unzip -o "$DATA_ZIP" -d public/data || true && \
+			# cleanup temporary packages and pip cache
+			pip3 uninstall -y gdown && \
+			apk del .fetch-deps || true; \
+		else \
+			echo "Dataset zip already present, skipping download."; \
 		fi
 
 EXPOSE 8080
