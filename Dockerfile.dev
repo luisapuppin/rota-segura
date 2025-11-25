@@ -7,6 +7,14 @@ RUN npm install
 
 COPY . .
 
+# If a zipped dataset exists, unzip it into public/data during image build so the raw CSV
+# isn't stored in the repository history. The `acidentes_2017_2025_tratado.csv.zip` file
+# should be placed under `public/data/` and will be extracted here.
+RUN if [ -f public/data/acidentes_2017_2025_tratado.csv.zip ]; then \
+			mkdir -p public/data && \
+			unzip -o public/data/acidentes_2017_2025_tratado.csv.zip -d public/data; \
+		fi
+
 EXPOSE 8080
 
 CMD ["npm", "run", "dev"]

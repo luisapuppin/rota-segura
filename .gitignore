@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dataset CSV (keep zipped in the repo; do not commit raw CSV)
+public/data/acidentes_2017_2025_tratado.csv
