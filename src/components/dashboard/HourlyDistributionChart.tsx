@@ -7,15 +7,39 @@ interface HourlyDistributionChartProps {
 }
 
 export function HourlyDistributionChart({ data }: HourlyDistributionChartProps) {
-  const hourCounts = data.reduce((acc, accident) => {
-    const hour = new Date(accident.data_hora).getHours();
-    acc[hour] = (acc[hour] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
+  // Count unique accident IDs per hour (0-23).
+  // Prefer the `horario` field from the dataset (format like "08:17"); fall back to `data_hora`.
+  const sets: Set<string>[] = Array.from({ length: 24 }, () => new Set<string>());
+
+  data.forEach((accident) => {
+    const id = (accident as any).id_acidente ?? (accident as any).id ?? String((accident as any).id_acidente ?? (accident as any).id ?? '');
+
+    let hourIndex = -1;
+    const horario = (accident as any).horario;
+    if (horario && typeof horario === 'string') {
+      const m = horario.trim().match(/^(\d{1,2}):/);
+      // fallback parsing: split on ':'
+      if (m && m[1]) {
+        hourIndex = Number(m[1]);
+      } else {
+        const parts = horario.split(':');
+        const h = Number(parts[0]);
+        if (!isNaN(h)) hourIndex = h;
+      }
+    }
+
+    if (hourIndex === -1) {
+      const d = new Date((accident as any).data_hora);
+      if (!isNaN(d.getTime())) hourIndex = d.getHours();
+    }
+
+    if (hourIndex < 0 || hourIndex > 23) hourIndex = 0;
+    if (id) sets[hourIndex].add(id);
+  });
 
   const chartData = Array.from({ length: 24 }, (_, i) => ({
     hour: `${String(i).padStart(2, '0')}h`,
-    count: hourCounts[i] || 0,
+    count: sets[i].size,
   }));
 
   return (

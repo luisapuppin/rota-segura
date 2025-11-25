@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+                                                                                                                                                              import { useState, useMemo, useEffect } from "react";
 import { FilterPanel, Filters } from "@/components/dashboard/FilterPanel";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { TimeSeriesChart } from "@/components/dashboard/TimeSeriesChart";
@@ -7,21 +7,51 @@ import { TopStatesChart } from "@/components/dashboard/TopStatesChart";
 import { HourlyDistributionChart } from "@/components/dashboard/HourlyDistributionChart";
 import { WeeklyDistributionChart } from "@/components/dashboard/WeeklyDistributionChart";
 import { HeatmapView } from "@/components/dashboard/HeatmapView";
-import { generateMockData } from "@/lib/mockData";
-import { BarChart3 } from "lucide-react";
+import { loadAccidentData } from "@/lib/dataLoader";
+import { BarChart3 } from "lucide-react";                                                                                                                                                                                                       
 
 const Index = () => {
   const [filters, setFilters] = useState<Filters>({
-    ufs: [],
+    ufs: [],                                                                                                                      
     brs: [],
     tiposAcidente: [],
     causas: [],
     tiposPista: [],
     condicoesClima: [],
-    dateRange: { start: new Date('2022-01-01'), end: new Date('2024-12-31') },
+    // expand default range to cover dataset years
+    dateRange: { start: new Date('2017-01-01'), end: new Date('2025-12-31') },
   });
 
-  const allData = useMemo(() => generateMockData(5000), []);
+  const [allData, setAllData] = useState<any[]>([]);
+
+  // load real dataset from public/data
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await loadAccidentData();
+        if (mounted) setAllData(data);
+      } catch (e) {
+        // keep using empty dataset on error
+        // eslint-disable-next-line no-console
+        console.error('Failed to load accident data', e);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filterOptions = useMemo(() => {
+    const ufs = Array.from(new Set(allData.map((d) => d.uf).filter(Boolean))).sort();
+    const brs = Array.from(new Set(allData.map((d) => d.br).filter(Boolean))).sort();
+    const tiposAcidente = Array.from(new Set(allData.map((d) => d.tipo_acidente).filter(Boolean))).sort();
+    const causas = Array.from(new Set(allData.map((d) => d.causa_acidente).filter(Boolean))).sort();
+    const tiposPista = Array.from(new Set(allData.map((d) => d.tipo_pista).filter(Boolean))).sort();
+    const condicoesClima = Array.from(new Set(allData.map((d) => d.condicao_climatica).filter(Boolean))).sort();
+
+    return { ufs, brs, tiposAcidente, causas, tiposPista, condicoesClima };
+  }, [allData]);
 
   const filteredData = useMemo(() => {
     return allData.filter((accident) => {
@@ -61,8 +91,8 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
-          <aside className="w-80 flex-shrink-0">
-            <FilterPanel filters={filters} onFiltersChange={setFilters} />
+          <aside className="w-80 flex-shrink-0 self-stretch">
+            <FilterPanel filters={filters} onFiltersChange={setFilters} filterOptions={filterOptions} />
           </aside>
 
           <main className="flex-1 space-y-6">
