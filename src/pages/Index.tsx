@@ -8,7 +8,6 @@ import { HourlyDistributionChart } from "@/components/dashboard/HourlyDistributi
 import { WeeklyDistributionChart } from "@/components/dashboard/WeeklyDistributionChart";
 import { TopAccidentTypesChart } from "@/components/dashboard/TopAccidentTypesChart";
 import { TopCausesChart } from "@/components/dashboard/TopCausesChart";
-import { HeatmapView } from "@/components/dashboard/HeatmapView";
 import { loadAccidentData } from "@/lib/dataLoader";
 import { BarChart3 } from "lucide-react";                                                                                                                                                                                                       
 
@@ -113,7 +112,7 @@ const Index = () => {
               <TopCausesChart data={filteredData} />
             </div>
 
-            <HeatmapView data={filteredData} />
+            {/* Heatmap removed per request */}
           </main>
         </div>
       </div>
