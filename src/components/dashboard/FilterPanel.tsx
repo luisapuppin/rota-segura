@@ -10,8 +10,6 @@ import { FILTER_OPTIONS } from "@/lib/mockData";
 export interface Filters {
   ufs: string[];
   brs: string[];
-  tiposAcidente: string[];
-  causas: string[];
   tiposPista: string[];
   condicoesClima: string[];
   dateRange: { start: Date; end: Date };
@@ -20,8 +18,6 @@ export interface Filters {
 export interface FilterOptions {
   ufs: string[];
   brs: string[];
-  tiposAcidente: string[];
-  causas: string[];
   tiposPista: string[];
   condicoesClima: string[];
 }
@@ -46,8 +42,6 @@ export function FilterPanel({ filters, onFiltersChange, filterOptions }: FilterP
     onFiltersChange({
       ufs: [],
       brs: [],
-      tiposAcidente: [],
-      causas: [],
       tiposPista: [],
       condicoesClima: [],
       dateRange: { start: new Date('2022-01-01'), end: new Date('2024-12-31') },
@@ -90,23 +84,7 @@ export function FilterPanel({ filters, onFiltersChange, filterOptions }: FilterP
 
           <Separator />
 
-          <FilterSection
-            title="Tipo de Acidente"
-            options={(filterOptions ?? FILTER_OPTIONS).tiposAcidente}
-            selected={filters.tiposAcidente}
-            onToggle={(value) => toggleFilter('tiposAcidente', value)}
-          />
-
-          <Separator />
-
-          <FilterSection
-            title="Causa do Acidente"
-            options={(filterOptions ?? FILTER_OPTIONS).causas}
-            selected={filters.causas}
-            onToggle={(value) => toggleFilter('causas', value)}
-          />
-
-          <Separator />
+          
 
           <FilterSection
             title="Tipo de Pista"

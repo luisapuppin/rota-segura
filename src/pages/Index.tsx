@@ -14,8 +14,6 @@ const Index = () => {
   const [filters, setFilters] = useState<Filters>({
     ufs: [],                                                                                                                      
     brs: [],
-    tiposAcidente: [],
-    causas: [],
     tiposPista: [],
     condicoesClima: [],
     // expand default range to cover dataset years
@@ -45,20 +43,18 @@ const Index = () => {
   const filterOptions = useMemo(() => {
     const ufs = Array.from(new Set(allData.map((d) => d.uf).filter(Boolean))).sort();
     const brs = Array.from(new Set(allData.map((d) => d.br).filter(Boolean))).sort();
-    const tiposAcidente = Array.from(new Set(allData.map((d) => d.tipo_acidente).filter(Boolean))).sort();
-    const causas = Array.from(new Set(allData.map((d) => d.causa_acidente).filter(Boolean))).sort();
+    // these filters were removed from the UI; still keep the keys in case other logic needs them
     const tiposPista = Array.from(new Set(allData.map((d) => d.tipo_pista).filter(Boolean))).sort();
     const condicoesClima = Array.from(new Set(allData.map((d) => d.condicao_climatica).filter(Boolean))).sort();
 
-    return { ufs, brs, tiposAcidente, causas, tiposPista, condicoesClima };
+    return { ufs, brs, tiposPista, condicoesClima };
   }, [allData]);
 
   const filteredData = useMemo(() => {
     return allData.filter((accident) => {
       if (filters.ufs.length > 0 && !filters.ufs.includes(accident.uf)) return false;
       if (filters.brs.length > 0 && !filters.brs.includes(accident.br)) return false;
-      if (filters.tiposAcidente.length > 0 && !filters.tiposAcidente.includes(accident.tipo_acidente)) return false;
-      if (filters.causas.length > 0 && !filters.causas.includes(accident.causa_acidente)) return false;
+  // tiposAcidente and causas filters were removed from the panel
       if (filters.tiposPista.length > 0 && !filters.tiposPista.includes(accident.tipo_pista)) return false;
       if (filters.condicoesClima.length > 0 && !filters.condicoesClima.includes(accident.condicao_climatica)) return false;
 
