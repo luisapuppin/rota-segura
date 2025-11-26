@@ -51,7 +51,13 @@ export function TopCausesChart({ data }: Props) {
         <BarChart data={chartData} layout="vertical" margin={{ top: 12, right: 24, left: 0, bottom: 12 }} barCategoryGap={12}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis type="number" domain={[0, 'dataMax']} stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => numberFormatter(Number(v))} />
-          <YAxis type="category" dataKey="causa" stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))' }} width={140} />
+          <YAxis
+            type="category"
+            dataKey="causa"
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+            width={120}
+          />
           <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
           <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[0,4,4,0]}>
             <LabelList dataKey="count" content={CustomBarLabel} />
