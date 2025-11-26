@@ -6,6 +6,8 @@ import { TopHighwaysChart } from "@/components/dashboard/TopHighwaysChart";
 import { TopStatesChart } from "@/components/dashboard/TopStatesChart";
 import { HourlyDistributionChart } from "@/components/dashboard/HourlyDistributionChart";
 import { WeeklyDistributionChart } from "@/components/dashboard/WeeklyDistributionChart";
+import { TopAccidentTypesChart } from "@/components/dashboard/TopAccidentTypesChart";
+import { TopCausesChart } from "@/components/dashboard/TopCausesChart";
 import { HeatmapView } from "@/components/dashboard/HeatmapView";
 import { loadAccidentData } from "@/lib/dataLoader";
 import { BarChart3 } from "lucide-react";                                                                                                                                                                                                       
@@ -104,6 +106,11 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <HourlyDistributionChart data={filteredData} />
               <WeeklyDistributionChart data={filteredData} />
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TopAccidentTypesChart data={filteredData} />
+              <TopCausesChart data={filteredData} />
             </div>
 
             <HeatmapView data={filteredData} />
