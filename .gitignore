@@ -26,4 +26,4 @@ dist-ssr
 # Dataset CSV (keep zipped in the repo; do not commit raw CSV)
 public/data/acidentes_2017_2025_tratado.csv
 # Ignore the zipped dataset as well; it will be downloaded during the Docker build
-public/data/acidentes_2017_2025_tratado.csv.zip
+public/data/acidentes_2017_2025_tratado.zip

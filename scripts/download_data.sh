@@ -3,10 +3,10 @@ set -euo pipefail
 
 # Helper to download and extract the accidents dataset from Google Drive.
 # Usage: ./scripts/download_data.sh FILE_ID DEST_ZIP
-# Example: ./scripts/download_data.sh 1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4 public/data/acidentes_2017_2025_tratado.csv.zip
+# Example: ./scripts/download_data.sh 1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4 public/data/acidentes_2017_2025_tratado.zip
 
 SOURCE=${1:-}
-DEST_ZIP=${2:-public/data/acidentes_2017_2025_tratado.csv.zip}
+DEST_ZIP=${2:-public/data/acidentes_2017_2025_tratado.zip}
 
 if [ -z "$SOURCE" ]; then
   # If SOURCE not provided, fall back to DATA_FILE_ID env var or the known default Google Drive id.

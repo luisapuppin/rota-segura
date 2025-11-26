@@ -36,6 +36,40 @@ npm i
 npm run dev
 ```
 
+## Dataset and Docker build
+
+This project uses a large CSV dataset (acidentes_2017_2025_tratado.csv). To avoid storing the raw CSV in the repository history the build process downloads a compressed ZIP and extracts it into `public/data/` during the Docker build.
+
+You can provide the dataset source to the Docker build in one of two ways:
+
+- DATA_DOWNLOAD_URL: a direct URL to the ZIP file (recommended if you host the zip in a blob store, e.g. Vercel Blob). Example Vercel blob URL formats are public HTTPS links such as:
+
+	https://<your-vercel-deployment>-vercel-storage.vercel.app/acidentesPRF/acidentes_2017_2025_tratado.zip
+
+	(Replace the hostname/path with the blob URL for your deployment. The script accepts any direct HTTPS URL that returns the ZIP file.)
+
+- DATA_FILE_ID: a Google Drive file id (the helper will use gdown). This is the fallback used by default in the Dockerfile.
+
+Build example using a Vercel blob URL:
+
+```bash
+docker build -f Dockerfile.dev -t rota-segura-dev \
+	--build-arg DATA_DOWNLOAD_URL='https://<your-vercel-blob-url>/acidentes_2017_2025_tratado.zip' .
+```
+
+If `DATA_DOWNLOAD_URL` is not provided the Dockerfile will use the `DATA_FILE_ID` ARG (preconfigured to a public Google Drive id) to download the ZIP via `gdown`.
+
+Notes:
+- The build step uses `scripts/download_data.sh` to perform the download and extraction. The script accepts either a direct URL or a Google Drive file id.
+- If your blob URL requires authentication, we can extend the script and Dockerfile to accept an authorization token (for example via `--build-arg DATA_DOWNLOAD_AUTH='Bearer ...'`) and pass an Authorization header to `curl`.
+- For local development you can also run the helper manually instead of Docker:
+
+```bash
+# download and extract locally (requires python/gdown or curl)
+./scripts/download_data.sh 'https://<your-vercel-blob-url>/acidentes_2017_2025_tratado.zip' public/data/acidentes_2017_2025_tratado.zip
+```
+
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
