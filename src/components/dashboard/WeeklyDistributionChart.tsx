@@ -9,15 +9,35 @@ interface WeeklyDistributionChartProps {
 const DAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 export function WeeklyDistributionChart({ data }: WeeklyDistributionChartProps) {
-  const dayCounts = data.reduce((acc, accident) => {
-    const day = new Date(accident.data_hora).getDay();
-    acc[day] = (acc[day] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
+  // Count unique accidents (by id) per weekday. Prefer `dia_semana` if present on the record,
+  // otherwise derive weekday from `data_hora`.
+  const lowerDays = DAYS.map((d) => d.toLowerCase());
+
+  const sets: Set<string>[] = Array.from({ length: 7 }, () => new Set<string>());
+
+  data.forEach((accident) => {
+    // robust id detection (data loader maps id -> id_acidente)
+    const id = (accident as any).id_acidente ?? (accident as any).id ?? String((accident as any).id_acidente ?? (accident as any).id ?? '');
+
+    let dayIndex = -1;
+    const ds = (accident as any).dia_semana;
+    if (ds && typeof ds === 'string' && ds.trim().length > 0) {
+      const norm = ds.trim().toLowerCase();
+      dayIndex = lowerDays.indexOf(norm);
+    }
+
+    if (dayIndex === -1) {
+      const d = new Date((accident as any).data_hora);
+      if (!isNaN(d.getTime())) dayIndex = d.getDay();
+    }
+
+    if (dayIndex < 0 || dayIndex > 6) dayIndex = 0;
+    if (id) sets[dayIndex].add(id);
+  });
 
   const chartData = DAYS.map((day, index) => ({
     day,
-    count: dayCounts[index] || 0,
+    count: sets[index].size,
   }));
 
   return (

@@ -10,19 +10,25 @@ import { FILTER_OPTIONS } from "@/lib/mockData";
 export interface Filters {
   ufs: string[];
   brs: string[];
-  tiposAcidente: string[];
-  causas: string[];
   tiposPista: string[];
   condicoesClima: string[];
   dateRange: { start: Date; end: Date };
 }
 
+export interface FilterOptions {
+  ufs: string[];
+  brs: string[];
+  tiposPista: string[];
+  condicoesClima: string[];
+}
+
 interface FilterPanelProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  filterOptions?: FilterOptions;
 }
 
-export function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
+export function FilterPanel({ filters, onFiltersChange, filterOptions }: FilterPanelProps) {
   const toggleFilter = (category: keyof Omit<Filters, 'dateRange'>, value: string) => {
     const currentValues = filters[category] as string[];
     const newValues = currentValues.includes(value)
@@ -36,8 +42,6 @@ export function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
     onFiltersChange({
       ufs: [],
       brs: [],
-      tiposAcidente: [],
-      causas: [],
       tiposPista: [],
       condicoesClima: [],
       dateRange: { start: new Date('2022-01-01'), end: new Date('2024-12-31') },
@@ -58,58 +62,46 @@ export function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
         </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-12rem)]">
+  <ScrollArea className="h-full">
         <div className="p-4 space-y-6">
           <FilterSection
             title="Estados (UF)"
-            options={FILTER_OPTIONS.ufs}
+            options={(filterOptions ?? FILTER_OPTIONS).ufs}
             selected={filters.ufs}
             onToggle={(value) => toggleFilter('ufs', value)}
+            columns={4}
           />
 
           <Separator />
 
           <FilterSection
             title="Rodovias (BR)"
-            options={FILTER_OPTIONS.brs}
+            options={(filterOptions ?? FILTER_OPTIONS).brs}
             selected={filters.brs}
             onToggle={(value) => toggleFilter('brs', value)}
+            columns={4}
           />
 
           <Separator />
 
-          <FilterSection
-            title="Tipo de Acidente"
-            options={FILTER_OPTIONS.tiposAcidente}
-            selected={filters.tiposAcidente}
-            onToggle={(value) => toggleFilter('tiposAcidente', value)}
-          />
-
-          <Separator />
-
-          <FilterSection
-            title="Causa do Acidente"
-            options={FILTER_OPTIONS.causas}
-            selected={filters.causas}
-            onToggle={(value) => toggleFilter('causas', value)}
-          />
-
-          <Separator />
+          
 
           <FilterSection
             title="Tipo de Pista"
-            options={FILTER_OPTIONS.tiposPista}
+            options={(filterOptions ?? FILTER_OPTIONS).tiposPista}
             selected={filters.tiposPista}
             onToggle={(value) => toggleFilter('tiposPista', value)}
+            columns={3}
           />
 
           <Separator />
 
           <FilterSection
             title="Condição Climática"
-            options={FILTER_OPTIONS.condicoesClima}
+            options={(filterOptions ?? FILTER_OPTIONS).condicoesClima}
             selected={filters.condicoesClima}
             onToggle={(value) => toggleFilter('condicoesClima', value)}
+            columns={3}
           />
         </div>
       </ScrollArea>
@@ -122,13 +114,22 @@ interface FilterSectionProps {
   options: string[];
   selected: string[];
   onToggle: (value: string) => void;
+  columns?: number;
 }
+function FilterSection({ title, options, selected, onToggle, columns = 1 }: FilterSectionProps) {
+  // choose grid class based on requested columns — keep tailwind-friendly classes
+  const gridClass = columns === 2
+    ? 'grid grid-cols-2 gap-x-3 gap-y-2'
+    : columns === 3
+    ? 'grid grid-cols-3 gap-x-3 gap-y-2'
+    : columns === 4
+    ? 'grid grid-cols-4 gap-x-3 gap-y-2'
+    : 'space-y-2';
 
-function FilterSection({ title, options, selected, onToggle }: FilterSectionProps) {
   return (
     <div className="space-y-3">
       <h3 className="font-medium text-sm text-foreground">{title}</h3>
-      <div className="space-y-2">
+      <div className={gridClass}>
         {options.map((option) => (
           <div key={option} className="flex items-center space-x-2">
             <Checkbox

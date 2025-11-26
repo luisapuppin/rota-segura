@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+                                                                                                                                                              import { useState, useMemo, useEffect } from "react";
 import { FilterPanel, Filters } from "@/components/dashboard/FilterPanel";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { TimeSeriesChart } from "@/components/dashboard/TimeSeriesChart";
@@ -6,29 +6,56 @@ import { TopHighwaysChart } from "@/components/dashboard/TopHighwaysChart";
 import { TopStatesChart } from "@/components/dashboard/TopStatesChart";
 import { HourlyDistributionChart } from "@/components/dashboard/HourlyDistributionChart";
 import { WeeklyDistributionChart } from "@/components/dashboard/WeeklyDistributionChart";
-import { HeatmapView } from "@/components/dashboard/HeatmapView";
-import { generateMockData } from "@/lib/mockData";
-import { BarChart3 } from "lucide-react";
+import { TopAccidentTypesChart } from "@/components/dashboard/TopAccidentTypesChart";
+import { TopCausesChart } from "@/components/dashboard/TopCausesChart";
+import { loadAccidentData } from "@/lib/dataLoader";
+import { BarChart3 } from "lucide-react";                                                                                                                                                                                                       
 
 const Index = () => {
   const [filters, setFilters] = useState<Filters>({
-    ufs: [],
+    ufs: [],                                                                                                                      
     brs: [],
-    tiposAcidente: [],
-    causas: [],
     tiposPista: [],
     condicoesClima: [],
-    dateRange: { start: new Date('2022-01-01'), end: new Date('2024-12-31') },
+    // expand default range to cover dataset years
+    dateRange: { start: new Date('2017-01-01'), end: new Date('2025-12-31') },
   });
 
-  const allData = useMemo(() => generateMockData(5000), []);
+  const [allData, setAllData] = useState<any[]>([]);
+
+  // load real dataset from public/data
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await loadAccidentData();
+        if (mounted) setAllData(data);
+      } catch (e) {
+        // keep using empty dataset on error
+        // eslint-disable-next-line no-console
+        console.error('Failed to load accident data', e);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filterOptions = useMemo(() => {
+    const ufs = Array.from(new Set(allData.map((d) => d.uf).filter(Boolean))).sort();
+    const brs = Array.from(new Set(allData.map((d) => d.br).filter(Boolean))).sort();
+    // these filters were removed from the UI; still keep the keys in case other logic needs them
+    const tiposPista = Array.from(new Set(allData.map((d) => d.tipo_pista).filter(Boolean))).sort();
+    const condicoesClima = Array.from(new Set(allData.map((d) => d.condicao_climatica).filter(Boolean))).sort();
+
+    return { ufs, brs, tiposPista, condicoesClima };
+  }, [allData]);
 
   const filteredData = useMemo(() => {
     return allData.filter((accident) => {
       if (filters.ufs.length > 0 && !filters.ufs.includes(accident.uf)) return false;
       if (filters.brs.length > 0 && !filters.brs.includes(accident.br)) return false;
-      if (filters.tiposAcidente.length > 0 && !filters.tiposAcidente.includes(accident.tipo_acidente)) return false;
-      if (filters.causas.length > 0 && !filters.causas.includes(accident.causa_acidente)) return false;
+  // tiposAcidente and causas filters were removed from the panel
       if (filters.tiposPista.length > 0 && !filters.tiposPista.includes(accident.tipo_pista)) return false;
       if (filters.condicoesClima.length > 0 && !filters.condicoesClima.includes(accident.condicao_climatica)) return false;
 
@@ -61,8 +88,8 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
-          <aside className="w-80 flex-shrink-0">
-            <FilterPanel filters={filters} onFiltersChange={setFilters} />
+          <aside className="w-80 flex-shrink-0 self-stretch">
+            <FilterPanel filters={filters} onFiltersChange={setFilters} filterOptions={filterOptions} />
           </aside>
 
           <main className="flex-1 space-y-6">
@@ -80,7 +107,12 @@ const Index = () => {
               <WeeklyDistributionChart data={filteredData} />
             </div>
 
-            <HeatmapView data={filteredData} />
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TopAccidentTypesChart data={filteredData} />
+              <TopCausesChart data={filteredData} />
+            </div>
+
+            {/* Heatmap removed per request */}
           </main>
         </div>
       </div>

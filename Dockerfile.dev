@@ -1,0 +1,32 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Download and extract the dataset from Google Drive if it's not present locally.
+# Uses `gdown` (installed temporarily) to handle Google Drive download confirmation tokens.
+# FILE_ID is taken from the shared link: https://drive.google.com/file/d/FILE_ID/view
+ARG DATA_FILE_ID=1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4
+ARG DATA_DOWNLOAD_URL=
+ARG DATA_ZIP=public/data/acidentes_2017_2025_tratado.zip
+RUN mkdir -p public/data && \
+		if [ ! -f "$DATA_ZIP" ]; then \
+			echo "Downloading dataset via scripts/download_data.sh..."; \
+			apk add --no-cache python3 py3-pip unzip ca-certificates curl && \
+			chmod +x ./scripts/download_data.sh && \
+					if [ -n "$DATA_DOWNLOAD_URL" ]; then \
+						./scripts/download_data.sh "$DATA_DOWNLOAD_URL" "$DATA_ZIP"; \
+			else \
+						./scripts/download_data.sh "$DATA_FILE_ID" "$DATA_ZIP"; \
+			fi; \
+		else \
+			echo "Dataset zip already present, skipping download."; \
+		fi
+
+EXPOSE 8080
+
+CMD ["npm", "run", "dev"]
