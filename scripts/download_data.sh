@@ -9,9 +9,9 @@ SOURCE=${1:-}
 DEST_ZIP=${2:-public/data/acidentes_2017_2025_tratado.csv.zip}
 
 if [ -z "$SOURCE" ]; then
-  echo "Usage: $0 SOURCE [DEST_ZIP]
-Where SOURCE can be either a direct download URL (https://...) or a Google Drive file id." >&2
-  exit 2
+  # If SOURCE not provided, fall back to DATA_FILE_ID env var or the known default Google Drive id.
+  SOURCE=${DATA_FILE_ID:-1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4}
+  echo "No SOURCE provided; falling back to DATA_FILE_ID='$SOURCE'"
 fi
 
 mkdir -p "$(dirname "$DEST_ZIP")"
@@ -21,7 +21,7 @@ if [ -f "$DEST_ZIP" ]; then
   exit 0
 fi
 
-echo "Downloading dataset to $DEST_ZIP from Google Drive id=$FILE_ID"
+echo "Downloading dataset to $DEST_ZIP from source=$SOURCE"
 # If SOURCE looks like a URL, download it directly; otherwise treat it as a Google Drive file id
 case "$SOURCE" in
   http://*|https://*)
