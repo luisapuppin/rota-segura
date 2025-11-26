@@ -1,107 +1,68 @@
-# Welcome to your Lovable project
+# Dashboard Rota Segura
 
-## Project info
+## Informações do projeto
 
-**URL**: https://lovable.dev/projects/68a7882d-c665-42a6-a12c-4930c83c3790
+URL do dashboard Rota Segura no Vercel:
+https://rota-segura-five.vercel.app/
 
-## How can I edit this code?
+URL do protótipo no Lovable:
+https://lovable.dev/projects/68a7882d-c665-42a6-a12c-4930c83c3790
 
-There are several ways of editing your application.
+URL de origem dos dados:
+https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf
 
-**Use Lovable**
+URL do notebook de tratamento de dados:
+https://colab.research.google.com/drive/1KR-3eDeomqqjUupViKJqwYGGz02gwxFa?usp=sharing
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/68a7882d-c665-42a6-a12c-4930c83c3790) and start prompting.
+## Instruções para execução local (docker)
 
-Changes made via Lovable will be committed automatically to this repo.
+Este projeto utiliza um grande conjunto de dados CSV (acidentes_2017_2025_tratado.csv). Para evitar o armazenamento do CSV original no repositório, o processo de build foi configurado para baixar um ZIP compactado e o extrair para public/data/ no decorrer do build no Vercel.
 
-**Use your preferred IDE**
+**Para fazer o deploy local faça:**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. Fazer o download dos dados tratados e descompactá-lo: https://drive.google.com/file/d/1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4/view?usp=sharing
+2. Clonar esse projeto em sua máquina local.
+3. Edite o arquivo Dockerfile.dev e **apague** a seção abaixo:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+# Download and extract the dataset from Google Drive if it's not present locally.
+# Uses `gdown` (installed temporarily) to handle Google Drive download confirmation tokens.
+# FILE_ID is taken from the shared link: https://drive.google.com/file/d/FILE_ID/view
+ARG DATA_FILE_ID=1Y2WLl9sGTGqBGTLahFAgtluyHidtfHu4
+ARG DATA_DOWNLOAD_URL=
+ARG DATA_ZIP=public/data/acidentes_2017_2025_tratado.zip
+RUN mkdir -p public/data && \
+		if [ ! -f "$DATA_ZIP" ]; then \
+			echo "Downloading dataset via scripts/download_data.sh..."; \
+			apk add --no-cache python3 py3-pip unzip ca-certificates curl && \
+			chmod +x ./scripts/download_data.sh && \
+					if [ -n "$DATA_DOWNLOAD_URL" ]; then \
+						./scripts/download_data.sh "$DATA_DOWNLOAD_URL" "$DATA_ZIP"; \
+			else \
+						./scripts/download_data.sh "$DATA_FILE_ID" "$DATA_ZIP"; \
+			fi; \
+		else \
+			echo "Dataset zip already present, skipping download."; \
+		fi
 ```
 
-## Dataset and Docker build
+4. Mova o arquivo descompactado no passo 1 para dentro do diretório public/data/
+5. No terminal de comando, vá para o diretório do projeto e execute docker compose para subir o container:
 
-This project uses a large CSV dataset (acidentes_2017_2025_tratado.csv). To avoid storing the raw CSV in the repository history the build process downloads a compressed ZIP and extracts it into `public/data/` during the Docker build.
-
-You can provide the dataset source to the Docker build in one of two ways:
-
-- DATA_DOWNLOAD_URL: a direct URL to the ZIP file (recommended if you host the zip in a blob store, e.g. Vercel Blob). Example Vercel blob URL formats are public HTTPS links such as:
-
-	https://<your-vercel-deployment>-vercel-storage.vercel.app/acidentesPRF/acidentes_2017_2025_tratado.zip
-
-	(Replace the hostname/path with the blob URL for your deployment. The script accepts any direct HTTPS URL that returns the ZIP file.)
-
-- DATA_FILE_ID: a Google Drive file id (the helper will use gdown). This is the fallback used by default in the Dockerfile.
-
-Build example using a Vercel blob URL:
-
-```bash
-docker build -f Dockerfile.dev -t rota-segura-dev \
-	--build-arg DATA_DOWNLOAD_URL='https://<your-vercel-blob-url>/acidentes_2017_2025_tratado.zip' .
+``` sh
+cd <CAMINHO_DO_PROJETO>
+docker compose up --build -d
+# As dependencias serão instaladas automaticamente ao subir o container
 ```
 
-If `DATA_DOWNLOAD_URL` is not provided the Dockerfile will use the `DATA_FILE_ID` ARG (preconfigured to a public Google Drive id) to download the ZIP via `gdown`.
+6. Acesse a aplicação no navegador: http://localhost:8080/
 
-Notes:
-- The build step uses `scripts/download_data.sh` to perform the download and extraction. The script accepts either a direct URL or a Google Drive file id.
-- If your blob URL requires authentication, we can extend the script and Dockerfile to accept an authorization token (for example via `--build-arg DATA_DOWNLOAD_AUTH='Bearer ...'`) and pass an Authorization header to `curl`.
-- For local development you can also run the helper manually instead of Docker:
+## Que tecnologias são usadas neste projeto?
 
-```bash
-# download and extract locally (requires python/gdown or curl)
-./scripts/download_data.sh 'https://<your-vercel-blob-url>/acidentes_2017_2025_tratado.zip' public/data/acidentes_2017_2025_tratado.zip
-```
-
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+Este projeto é construído com:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/68a7882d-c665-42a6-a12c-4930c83c3790) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
